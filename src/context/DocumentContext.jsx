@@ -3,7 +3,9 @@
 import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react'
 import { storage } from '@/utils/storage'
 
+
 import { calculateCoverage, getCharCount } from '@/utils/coverage'
+import { getArtifactTemplate } from '@/config/artifacts'
 
 // Storage key for workspace
 const WORKSPACE_KEY = 'apricity-workspace'
@@ -195,7 +197,7 @@ export function DocumentProvider({ children }) {
               id: defaultDocId,
               title: 'Problem Statement',
               icon: 'Target',
-              content: null,
+              content: getArtifactTemplate('problem-statement')?.defaultContent || null,
               createdAt: new Date().toISOString()
             }
           },
@@ -289,7 +291,7 @@ export function DocumentProvider({ children }) {
         id,
         title: template.title,
         icon: template.icon,
-        content: null // Start with empty content
+        content: template.defaultContent || null
       }
     })
     return id
