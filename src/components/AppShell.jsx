@@ -1,7 +1,6 @@
 'use client'
 
 import { DocumentProvider } from '@/context/DocumentContext'
-import { ThemeProvider } from '@/context/ThemeContext'
 import TopBar from './TopBar'
 import LeftRail from './LeftRail'
 import ContentViewer from './ContentViewer'
@@ -27,10 +26,8 @@ function AppShellContent() {
 
 export default function AppShell() {
   return (
-    <ThemeProvider>
-      <DocumentProvider>
-        <AppShellContent />
-      </DocumentProvider>
-    </ThemeProvider>
+    <DocumentProvider>
+      <AppShellContent />
+    </DocumentProvider>
   )
 }

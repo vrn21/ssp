@@ -69,16 +69,16 @@ export default function ViewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       {/* Header */}
-      <header className="h-14 px-6 flex items-center justify-between border-b border-gray-200 bg-white">
+      <header className="h-14 px-6 flex items-center justify-between border-b border-border-subtle bg-main">
         <div className="flex items-center gap-3">
           <span className="text-lg">🍊</span>
-          <span className="font-medium text-gray-900">Apricity</span>
+          <span className="font-medium text-primary">Apricity</span>
         </div>
         <a 
           href="/"
-          className="text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-1"
+          className="text-sm text-secondary hover:text-primary transition-colors flex items-center gap-1"
         >
           <Icons.ArrowLeft className="w-4 h-4" />
           Back to workspace
@@ -92,19 +92,19 @@ export default function ViewPage() {
             {/* Processing indicator */}
             <div className="text-center mb-12">
               <div className="w-16 h-16 mx-auto mb-6 relative">
-                <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
-                <div className="absolute inset-0 rounded-full border-4 border-orange-400 border-t-transparent animate-spin" />
+                <div className="absolute inset-0 rounded-full border-4 border-border-subtle" />
+                <div className="absolute inset-0 rounded-full border-4 border-accent-primary border-t-transparent animate-spin" />
               </div>
-              <h1 className="text-2xl font-medium text-gray-900 mb-2">
+              <h1 className="text-2xl font-medium text-primary mb-2">
                 Developing your view
               </h1>
-              <p className="text-gray-500">
+              <p className="text-secondary">
                 This may take a few moments...
               </p>
             </div>
 
             {/* Progress stages */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div className="bg-main rounded-xl border border-border-subtle p-6 shadow-sm">
               <div className="space-y-4">
                 {STAGES.map((stage, index) => {
                   const isComplete = index < currentStage
@@ -119,26 +119,26 @@ export default function ViewPage() {
                     >
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                         isComplete 
-                          ? 'bg-green-100 text-green-600'
+                          ? 'bg-accent-success/20 text-accent-success'
                           : isCurrent
-                            ? 'bg-orange-100 text-orange-600'
-                            : 'bg-gray-100 text-gray-400'
+                            ? 'bg-accent-primary/20 text-accent-primary'
+                            : 'bg-surface text-secondary'
                       }`}>
                         {isComplete ? (
                           <Icons.Check className="w-4 h-4" />
                         ) : isCurrent ? (
-                          <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                          <div className="w-2 h-2 bg-accent-primary rounded-full animate-pulse" />
                         ) : (
                           getIcon(stage.icon, 'w-4 h-4')
                         )}
                       </div>
                       <span className={`text-sm ${
-                        isComplete || isCurrent ? 'text-gray-900' : 'text-gray-500'
+                        isComplete || isCurrent ? 'text-primary' : 'text-faint'
                       }`}>
                         {stage.label}
                       </span>
                       {isCurrent && (
-                        <Icons.Loader2 className="w-4 h-4 text-orange-500 animate-spin ml-auto" />
+                        <Icons.Loader2 className="w-4 h-4 text-accent-primary animate-spin ml-auto" />
                       )}
                     </div>
                   )
@@ -148,8 +148,8 @@ export default function ViewPage() {
 
             {/* View ID */}
             <div className="mt-6 text-center">
-              <p className="text-xs text-gray-400">
-                View ID: <code className="bg-gray-100 px-2 py-0.5 rounded">{viewId}</code>
+              <p className="text-xs text-secondary">
+                View ID: <code className="bg-surface border border-border-subtle px-2 py-0.5 rounded text-primary">{viewId}</code>
               </p>
             </div>
           </div>
@@ -158,9 +158,9 @@ export default function ViewPage() {
         {status === 'ready' && viewData && (
           <div className="max-w-4xl w-full">
             {/* TODO: Render the actual view content */}
-            <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-              <h1 className="text-2xl font-medium text-gray-900 mb-4">View Ready</h1>
-              <pre className="text-sm text-gray-600 bg-gray-50 p-4 rounded-lg overflow-auto">
+            <div className="bg-main rounded-xl border border-border-subtle p-8 shadow-sm">
+              <h1 className="text-2xl font-medium text-primary mb-4">View Ready</h1>
+              <pre className="text-sm text-secondary bg-surface border border-border-subtle p-4 rounded-lg overflow-auto">
                 {JSON.stringify(viewData, null, 2)}
               </pre>
             </div>
@@ -172,15 +172,15 @@ export default function ViewPage() {
             <div className="w-16 h-16 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
               <Icons.AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
-            <h1 className="text-2xl font-medium text-gray-900 mb-2">
+            <h1 className="text-2xl font-medium text-primary mb-2">
               Something went wrong
             </h1>
-            <p className="text-gray-500 mb-6">
+            <p className="text-secondary mb-6">
               {error || 'Failed to generate view. Please try again.'}
             </p>
             <a
               href="/"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-main rounded-lg hover:bg-secondary transition-colors"
             >
               <Icons.ArrowLeft className="w-4 h-4" />
               Back to workspace

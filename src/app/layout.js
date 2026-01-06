@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import { ThemeProvider } from '@/context/ThemeContext'
 import "./globals.css";
 
 const inter = Inter({
@@ -15,7 +16,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
