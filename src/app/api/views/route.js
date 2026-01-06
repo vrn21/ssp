@@ -1,0 +1,47 @@
+import { NextResponse } from 'next/server'
+
+export async function POST(request) {
+  try {
+    const body = await request.json()
+    const { viewId, content } = body
+
+    if (!viewId || !content) {
+      return NextResponse.json(
+        { error: 'Missing viewId or content' },
+        { status: 400 }
+      )
+    }
+
+    const backendUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8000'
+    
+    try {
+      // Forward to Python backend
+      const response = await fetch(`${backendUrl}/api/process-view`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ viewId, content }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Backend responded with ${response.status}`)
+      }
+
+      const data = await response.json()
+      return NextResponse.json(data)
+    } catch (backendError) {
+      console.error('Python backend error:', backendError)
+      return NextResponse.json(
+        { error: 'Failed to communicate with analysis backend' },
+        { status: 502 }
+      )
+    }
+  } catch (error) {
+    console.error('API Route error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

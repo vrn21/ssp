@@ -6,12 +6,15 @@ import * as Icons from 'lucide-react'
 import { useDocument } from '@/context/DocumentContext'
 import { useTheme } from '@/context/ThemeContext'
 
+import { extractText } from '@/utils/coverage'
+
 export default function TopBar() {
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
-  const { startupName, setStartupName, saveStatus } = useDocument()
+  const { startupName, setStartupName, saveStatus, documents } = useDocument()
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(startupName)
+  const [isGenerating, setIsGenerating] = useState(false)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -41,6 +44,44 @@ export default function TopBar() {
     } else if (e.key === 'Escape') {
       setEditValue(startupName)
       setIsEditing(false)
+    }
+  }
+
+  const handleDevelopView = async () => {
+    try {
+      setIsGenerating(true)
+      const viewId = crypto.randomUUID()
+      
+      // Aggregate all document content
+      const aggregatedContent = Object.values(documents || {})
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+        .map(doc => {
+          const text = extractText(doc.content)
+          return `--- Document: ${doc.title} ---\n\n${text}\n`
+        })
+        .join('\n')
+
+      // Send to API
+      await fetch('/api/views', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          viewId,
+          content: aggregatedContent
+        })
+      })
+
+      // Navigate to view page regardless of success (polling page handles status)
+      // Or should we wait? The user requested "first of all... convert... sensitive to api".
+      // We'll navigate after sending.
+      router.push(`/${viewId}`)
+    } catch (error) {
+      console.error('Failed to develop view:', error)
+      // Optional: Show error toast here
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -107,14 +148,12 @@ export default function TopBar() {
       <div className="flex items-center gap-4">
         {getSaveIndicator()}
         <button
-          onClick={() => {
-            // Generate UUID and navigate to view page
-            const viewId = crypto.randomUUID()
-            router.push(`/${viewId}`)
-          }}
-          className="px-3 py-1.5 text-xs font-medium text-secondary border border-border-subtle rounded-md transition-all duration-200 hover:text-accent-primary hover:border-accent-primary hover:bg-orange-50/10"
+          onClick={handleDevelopView}
+          disabled={isGenerating}
+          className="px-3 py-1.5 text-xs font-medium text-secondary border border-border-subtle rounded-md transition-all duration-200 hover:text-accent-primary hover:border-accent-primary hover:bg-orange-50/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          Develop a View
+          {isGenerating && <Icons.Loader2 className="w-3 h-3 animate-spin" />}
+          {isGenerating ? 'Sending...' : 'Develop a View'}
         </button>
 
         <div className="w-px h-4 bg-border-subtle" />
