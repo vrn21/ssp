@@ -48,12 +48,28 @@ make dev
 
 ### Individual Services
 
-```bash
 # Frontend only (http://localhost:3000)
+
+```bash
 make frontend
+```
+
+or
+
+```bash
+bun run dev
+```
 
 # Backend only (http://localhost:8000)
+
+```bash
 make backend
+```
+
+or
+
+```bash
+uv run uvicorn main:app --reload --port 8000
 ```
 
 ## Environment Variables
@@ -62,3 +78,15 @@ make backend
 | -------- | --------------------- | ---------------- |
 | Frontend | `frontend/.env.local` | (optional)       |
 | Backend  | `backend/.env`        | `OPENAI_API_KEY` |
+
+```
+
+```
+
+```
+
+```
+
+```
+
+```
