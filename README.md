@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Startup Success Predictor
 
-## Getting Started
+An AI-powered tool that helps founders articulate their startup vision and receive objective success probability analysis.
 
-First, run the development server:
+## What It Does
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**For Founders:**
+
+- Structure your startup thinking using guided sections (Problem Statement, Solution, Market, Team, Funding, Risks)
+- Fill in rich-text documents with prompts that guide you through key aspects investors care about
+- See a visual coverage indicator showing how complete your documentation is
+
+**AI Analysis:**
+
+- Submit your documentation to receive an AI-powered success probability score
+- Get detailed reasoning across market opportunity, product differentiation, team strength, and risk factors
+- Use insights to refine your pitch and identify blind spots
+
+## Project Structure
+
+```
+.
+├── frontend/     # Next.js web application
+├── backend/      # FastAPI + LangChain analysis engine
+├── Makefile      # Development commands
+└── README.md
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prerequisites
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- **Node.js** 18+ and **Bun**
+- **Python** 3.13+ and **uv**
+- **OpenAI API Key** (for backend analysis)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Quick Start
 
-## Learn More
+```bash
+# Install all dependencies
+make install
 
-To learn more about Next.js, take a look at the following resources:
+# Set up environment (backend)
+cp backend/.env.example backend/.env
+# Add your OPENAI_API_KEY to backend/.env
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Run both services
+make dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Individual Services
 
-## Deploy on Vercel
+```bash
+# Frontend only (http://localhost:3000)
+make frontend
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Backend only (http://localhost:8000)
+make backend
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment Variables
+
+| Service  | File                  | Variables        |
+| -------- | --------------------- | ---------------- |
+| Frontend | `frontend/.env.local` | (optional)       |
+| Backend  | `backend/.env`        | `OPENAI_API_KEY` |

@@ -3,11 +3,11 @@ import { NextResponse } from 'next/server'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { viewId, content } = body
+    const { prompt } = body
 
-    if (!viewId || !content) {
+    if (!prompt) {
       return NextResponse.json(
-        { error: 'Missing viewId or content' },
+        { error: 'Missing prompt' },
         { status: 400 }
       )
     }
@@ -16,12 +16,12 @@ export async function POST(request) {
     
     try {
       // Forward to Python backend
-      const response = await fetch(`${backendUrl}/api/process-view`, {
+      const response = await fetch(`${backendUrl}/view`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ viewId, content }),
+        body: JSON.stringify({ prompt }),
       })
 
       if (!response.ok) {

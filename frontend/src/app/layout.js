@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import { ThemeProvider } from '@/context/ThemeContext'
+import { DocumentProvider } from '@/context/DocumentContext'
 import "./globals.css";
 
 const inter = Inter({
@@ -17,7 +18,9 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
         <ThemeProvider>
-          {children}
+          <DocumentProvider>
+            {children}
+          </DocumentProvider>
         </ThemeProvider>
       </body>
     </html>

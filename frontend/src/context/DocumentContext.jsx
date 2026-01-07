@@ -19,7 +19,8 @@ const initialState = {
   activeDocId: null,
   activeFileId: null,
   saveStatus: 'idle', // 'idle' | 'saving' | 'saved' | 'error'
-  isLoaded: false
+  isLoaded: false,
+  views: {} // { viewId: { id, content, status, data, error, createdAt } }
 }
 
 // Action types
@@ -34,7 +35,9 @@ const ACTIONS = {
   DELETE_DOCUMENT: 'DELETE_DOCUMENT',
   UPLOAD_FILE: 'UPLOAD_FILE',
   DELETE_FILE: 'DELETE_FILE',
-  SET_SAVE_STATUS: 'SET_SAVE_STATUS'
+  SET_SAVE_STATUS: 'SET_SAVE_STATUS',
+  CREATE_VIEW: 'CREATE_VIEW',
+  UPDATE_VIEW: 'UPDATE_VIEW'
 }
 
 // Reducer
@@ -157,6 +160,35 @@ function workspaceReducer(state, action) {
         ...state,
         saveStatus: action.payload
       }
+    case ACTIONS.CREATE_VIEW: {
+      const { id, content } = action.payload
+      return {
+        ...state,
+        views: {
+          ...state.views,
+          [id]: {
+            id,
+            content,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+          }
+        }
+      }
+    }
+    case ACTIONS.UPDATE_VIEW: {
+      const { id, updates } = action.payload
+      if (!state.views[id]) return state
+      return {
+        ...state,
+        views: {
+          ...state.views,
+          [id]: {
+            ...state.views[id],
+            ...updates
+          }
+        }
+      }
+    }
     default:
       return state
   }
@@ -186,7 +218,8 @@ export function DocumentProvider({ children }) {
               files: saved.files || {},
               activeItemType: saved.activeItemType || (saved.activeDocId ? 'document' : null),
               activeDocId: saved.activeDocId || null,
-              activeFileId: saved.activeFileId || null
+              activeFileId: saved.activeFileId || null,
+              views: saved.views || {}
             }
           })
         } else {
@@ -239,7 +272,8 @@ export function DocumentProvider({ children }) {
         files: state.files,
         activeDocId: state.activeDocId,
         activeFileId: state.activeFileId,
-        activeItemType: state.activeItemType
+        activeItemType: state.activeItemType,
+        views: state.views
       })
 
       dispatch({
@@ -251,7 +285,7 @@ export function DocumentProvider({ children }) {
         dispatch({ type: ACTIONS.SET_SAVE_STATUS, payload: 'idle' })
       }, 2000)
     }, 500)
-  }, [state.startupName, state.documents, state.files, state.activeDocId, state.activeFileId, state.activeItemType])
+  }, [state.startupName, state.documents, state.files, state.activeDocId, state.activeFileId, state.activeItemType, state.views])
 
   // Auto-save on state change
   useEffect(() => {
@@ -372,6 +406,20 @@ export function DocumentProvider({ children }) {
     dispatch({ type: ACTIONS.SET_ACTIVE_FILE, payload: fileId })
   }, [])
 
+  const createView = useCallback((id, content) => {
+    dispatch({
+      type: ACTIONS.CREATE_VIEW,
+      payload: { id, content }
+    })
+  }, [])
+
+  const updateView = useCallback((id, updates) => {
+    dispatch({
+      type: ACTIONS.UPDATE_VIEW,
+      payload: { id, updates }
+    })
+  }, [])
+
   // Get active file
   const activeFile = useMemo(() => 
     state.activeFileId ? state.files[state.activeFileId] : null
@@ -399,7 +447,10 @@ export function DocumentProvider({ children }) {
     setActiveFile,
     deleteDocument,
     uploadFile,
-    deleteFile
+    deleteFile,
+    views: state.views,
+    createView,
+    updateView
   }), [
     state.startupName,
     state.documents,
@@ -422,7 +473,10 @@ export function DocumentProvider({ children }) {
     setActiveFile,
     deleteDocument,
     uploadFile,
-    deleteFile
+    deleteFile,
+    state.views,
+    createView,
+    updateView
   ])
 
   return (

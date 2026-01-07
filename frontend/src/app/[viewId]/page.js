@@ -1,19 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import * as Icons from 'lucide-react'
+import { useDocument } from '@/context/DocumentContext'
 
 /**
  * View Processing Page
  * 
- * This page displays the status of a view being generated.
- * It polls the backend API with the viewId (UUID) and displays
- * the results when ready.
+ * Displays the status of a view being generated and results.
+ * Integrates with DocumentContext to read inputs and update status.
  */
 
-// Processing stages for visual feedback
+// Processing stages for visual feedback during pending state
 const STAGES = [
   { id: 'collecting', label: 'Collecting documents', icon: 'FileStack' },
   { id: 'analyzing', label: 'Analyzing content', icon: 'Search' },
@@ -25,48 +25,107 @@ export default function ViewPage() {
   const params = useParams()
   const viewId = params.viewId
   
-  const [status, setStatus] = useState('processing') // 'processing' | 'ready' | 'error'
+  const { views, updateView, isLoaded } = useDocument()
+  const view = views?.[viewId]
+  
   const [currentStage, setCurrentStage] = useState(0)
-  const [viewData, setViewData] = useState(null)
-  const [error, setError] = useState(null)
+  const isFetchingRef = useRef(false)
 
-  // Simulate stage progression (will be replaced with actual API polling)
+  // Animation for stages
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStage(prev => {
-        if (prev < STAGES.length - 1) return prev + 1
-        return prev
-      })
-    }, 2000)
+    if (view?.status === 'pending') {
+      const interval = setInterval(() => {
+        setCurrentStage(prev => {
+          if (prev < STAGES.length - 1) return prev + 1
+          return prev
+        })
+      }, 1500)
+      return () => clearInterval(interval)
+    } else if (view?.status === 'completed') {
+      setCurrentStage(STAGES.length - 1)
+    }
+  }, [view?.status])
 
-    return () => clearInterval(interval)
-  }, [])
-
-  // Poll API for view status
+  // Trigger analysis if pending
   useEffect(() => {
-    const pollInterval = setInterval(async () => {
-      try {
-        // TODO: Replace with actual API call
-        // const response = await fetch(`/api/views/${viewId}`)
-        // const data = await response.json()
-        // 
-        // if (data.status === 'ready') {
-        //   setStatus('ready')
-        //   setViewData(data.view)
-        //   clearInterval(pollInterval)
-        // }
-      } catch (err) {
-        console.error('Failed to poll view status:', err)
-      }
-    }, 3000)
+    if (!isLoaded || !view) return
 
-    return () => clearInterval(pollInterval)
-  }, [viewId])
+    if (view.status === 'pending' && !isFetchingRef.current) {
+      isFetchingRef.current = true;
+
+      (async () => {
+        try {
+          const response = await fetch('/api/views', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              prompt: view.content
+            })
+          })
+
+          if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`)
+          }
+
+          const data = await response.json()
+          
+          if (data.error) {
+            throw new Error(data.error)
+          }
+
+          updateView(viewId, {
+            status: 'completed',
+            data: data.analysis
+          })
+        } catch (error) {
+          console.error('View generation failed:', error)
+          updateView(viewId, {
+            status: 'error',
+            error: error.message || 'Failed to generate view'
+          })
+        } finally {
+          isFetchingRef.current = false
+        }
+      })()
+    }
+  }, [isLoaded, view, viewId, updateView])
 
   // Get icon component
   const getIcon = (iconName, className = 'w-5 h-5') => {
     const IconComponent = Icons[iconName]
     return IconComponent ? <IconComponent className={className} /> : null
+  }
+
+  // Loading state for context
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <Icons.Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    )
+  }
+
+  // 404 State
+  if (!view) {
+    return (
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-8">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <Icons.FileQuestion className="w-8 h-8 text-gray-400" />
+        </div>
+        <h1 className="text-xl font-medium text-primary mb-2">View Not Found</h1>
+        <p className="text-secondary mb-6 text-center max-w-sm">
+          The requested view ID does not exist or has been deleted.
+        </p>
+        <Link 
+          href="/"
+          className="px-4 py-2 bg-main border border-border-subtle rounded-lg text-sm text-primary hover:bg-surface transition-colors"
+        >
+          Return to Workspace
+        </Link>
+      </div>
+    )
   }
 
   return (
@@ -88,7 +147,7 @@ export default function ViewPage() {
 
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center p-8">
-        {status === 'processing' && (
+        {view.status === 'pending' && (
           <div className="max-w-md w-full">
             {/* Processing indicator */}
             <div className="text-center mb-12">
@@ -100,7 +159,7 @@ export default function ViewPage() {
                 Developing your view
               </h1>
               <p className="text-secondary">
-                This may take a few moments...
+                Analyzing your documents...
               </p>
             </div>
 
@@ -156,28 +215,36 @@ export default function ViewPage() {
           </div>
         )}
 
-        {status === 'ready' && viewData && (
+        {view.status === 'completed' && (
           <div className="max-w-4xl w-full">
-            {/* TODO: Render the actual view content */}
             <div className="bg-main rounded-xl border border-border-subtle p-8 shadow-sm">
-              <h1 className="text-2xl font-medium text-primary mb-4">View Ready</h1>
-              <pre className="text-sm text-secondary bg-surface border border-border-subtle p-4 rounded-lg overflow-auto">
-                {JSON.stringify(viewData, null, 2)}
-              </pre>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-medium text-primary flex items-center gap-2">
+                  <Icons.Sparkles className="w-6 h-6 text-accent-primary" />
+                  Analysis Result
+                </h1>
+                <span className="text-xs text-secondary">
+                  Generated {new Date(view.createdAt).toLocaleString()}
+                </span>
+              </div>
+              
+              <div className="prose prose-sm max-w-none text-secondary">
+                <div className="whitespace-pre-wrap">{view.data}</div>
+              </div>
             </div>
           </div>
         )}
 
-        {status === 'error' && (
+        {view.status === 'error' && (
           <div className="max-w-md w-full text-center">
             <div className="w-16 h-16 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
               <Icons.AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
             <h1 className="text-2xl font-medium text-primary mb-2">
-              Something went wrong
+              Analysis Failed
             </h1>
             <p className="text-secondary mb-6">
-              {error || 'Failed to generate view. Please try again.'}
+              {view.error || 'Failed to generate view. Please try again.'}
             </p>
             <Link
               href="/"

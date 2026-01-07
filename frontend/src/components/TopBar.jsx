@@ -11,7 +11,7 @@ import { extractText } from '@/utils/coverage'
 export default function TopBar() {
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
-  const { startupName, setStartupName, saveStatus, documents } = useDocument()
+  const { startupName, setStartupName, saveStatus, documents, createView } = useDocument()
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(startupName)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -61,21 +61,10 @@ export default function TopBar() {
         })
         .join('\n')
 
-      // Send to API
-      await fetch('/api/views', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          viewId,
-          content: aggregatedContent
-        })
-      })
+      // Create view in context (starts as pending)
+      createView(viewId, aggregatedContent)
 
-      // Navigate to view page regardless of success (polling page handles status)
-      // Or should we wait? The user requested "first of all... convert... sensitive to api".
-      // We'll navigate after sending.
+      // Navigate to view page
       router.push(`/${viewId}`)
     } catch (error) {
       console.error('Failed to develop view:', error)
