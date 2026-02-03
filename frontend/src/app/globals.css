@@ -4,7 +4,7 @@
   /* Semantic Colors */
   --color-main: var(--bg-main);
   --color-surface: var(--bg-surface);
-  
+
   --color-primary: var(--text-primary);
   --color-secondary: var(--text-secondary);
   --color-faint: var(--text-faint);
@@ -24,6 +24,17 @@
   --color-orange-500: #f97316;
   --color-orange-600: #ea580c;
   --color-orange-950: #431407;
+
+  --animate-fade-in: fadeIn 1.2s ease-out forwards;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 }
 
 @layer base {
@@ -45,16 +56,16 @@
 
   :root[data-theme="dark"] {
     /* User Provided Dark Mode Colors */
-    --bg-main: #0E1116;
-    --bg-surface: #151A21;
+    --bg-main: #0e1116;
+    --bg-surface: #151a21;
 
-    --text-primary: #E6EAF0;
-    --text-secondary: #A9B1C3;
-    --text-faint: #6F7A8F;
+    --text-primary: #e6eaf0;
+    --text-secondary: #a9b1c3;
+    --text-faint: #6f7a8f;
 
-    --accent-primary: #5B8CFF;
-    --accent-success: #4CBBA6;
-    --accent-warning: #E0B15A;
+    --accent-primary: #5b8cff;
+    --accent-success: #4cbba6;
+    --accent-warning: #e0b15a;
 
     --border-subtle: #202632;
   }
@@ -81,26 +92,55 @@
   @apply outline-none text-primary;
 }
 
-.ProseMirror h1, .ProseMirror h2, .ProseMirror h3 {
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3 {
   @apply text-primary font-medium mt-6 mb-4;
 }
 
-.ProseMirror h1 { @apply text-3xl font-bold mt-8; }
-.ProseMirror h2 { @apply text-2xl font-semibold; }
-.ProseMirror h3 { @apply text-xl; }
+.ProseMirror h1 {
+  @apply text-3xl font-bold mt-8;
+}
+.ProseMirror h2 {
+  @apply text-2xl font-semibold;
+}
+.ProseMirror h3 {
+  @apply text-xl;
+}
 
-.ProseMirror p, .ProseMirror ul, .ProseMirror ol {
+.ProseMirror p,
+.ProseMirror ul,
+.ProseMirror ol {
   @apply mb-4 leading-relaxed text-secondary;
 }
 
-.ProseMirror ul { @apply list-disc list-outside ml-4; }
-.ProseMirror ol { @apply list-decimal list-outside ml-4; }
+.ProseMirror ul {
+  @apply list-disc list-outside ml-4;
+}
+.ProseMirror ol {
+  @apply list-decimal list-outside ml-4;
+}
 
-/* Placeholders */
+/* Placeholders - Legacy/Built-in */
 .ProseMirror p.is-editor-empty:first-child::before,
 .ProseMirror h1.is-editor-empty::before,
 .ProseMirror h2.is-editor-empty::before,
 .ProseMirror h3.is-editor-empty::before {
   content: attr(data-placeholder);
   @apply text-faint float-left h-0 pointer-events-none;
+}
+
+/* Dynamic Placeholder System */
+.dynamic-placeholder {
+  @apply text-faint italic pointer-events-none select-none inline-block;
+}
+
+.dynamic-placeholder.empty-state {
+  /* Ensure it looks like input */
+  /* @apply text-faint/80; */
+}
+
+.dynamic-placeholder.continuation-state {
+  @apply block mt-2 opacity-0 animate-fade-in;
+  /* Ensure it doesn't affect layout too much, though block is fine at end */
 }

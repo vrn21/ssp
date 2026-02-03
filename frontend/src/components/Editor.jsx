@@ -3,7 +3,10 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import { DynamicPlaceholder } from '../extensions/DynamicPlaceholderPlugin'
 import * as Icons from 'lucide-react'
+import { ARTIFACT_TEMPLATES } from '@/config/artifacts'
+import { useMemo } from 'react'
 import { useDocument } from '@/context/DocumentContext'
 import { useEffect, useRef, useState } from 'react'
 
@@ -64,6 +67,20 @@ export default function Editor() {
     }
   }
 
+  const promptConfig = useMemo(() => {
+    // Merge all prompts from all templates into a single map: Heading -> Prompts[]
+    // This allows the extension to find prompts for any known heading
+    const allPrompts = {}
+    ARTIFACT_TEMPLATES.forEach(template => {
+      if (template.prompts) {
+        Object.entries(template.prompts).forEach(([heading, prompts]) => {
+          allPrompts[heading] = prompts
+        })
+      }
+    })
+    return allPrompts
+  }, [])
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -77,9 +94,13 @@ export default function Editor() {
           if (node.type.name === 'heading') {
             return 'Heading...'
           }
-          return 'Start writing your thoughts...'
+          // Default placeholders handled by DynamicPlaceholder extension
+          return null
         },
         emptyEditorClass: 'is-editor-empty'
+      }),
+      DynamicPlaceholder.configure({
+        prompts: promptConfig
       })
     ],
     editorProps: {
